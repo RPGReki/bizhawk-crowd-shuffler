@@ -135,7 +135,7 @@ const startServer = async () => {
 
       const ping = () => {
         sockets.forEach((sock) => {
-          sock.write("ping\n");
+          sock.write("4 ping\n");
         });
 
         setTimeout(ping, 2000);
