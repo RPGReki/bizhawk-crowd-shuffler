@@ -6,9 +6,8 @@ local pathseparator = package.config:sub(1,1)
 config.gamePath = "." .. pathseparator .. "sessions" .. pathseparator .. config.sessionPath .. pathseparator .. "CurrentROMs" .. pathseparator
 config.savePath = "." .. pathseparator .. "sessions" .. pathseparator .. config.sessionPath .. pathseparator .. "CurrentSaves" .. pathseparator
 
-local frame = 0
-
 local frame_check_mod = 10 -- check every X frames
+local socket_timeout = 10
 
 local function isempty(s)
   return s == nil or s == ''
@@ -21,7 +20,7 @@ function commands.switchRom(rom)
 
     print("DEBUG: switchRom=" .. rom)
 
-    if(currentGame ) then
+    if(currentGame) then
        savestate.save(config.savePath .. currentGame  .. ".State")
     end
 
@@ -61,26 +60,28 @@ local function parseAndExecuteResponse(response)
     end
 end
 
-local function main()
-   -- purge socket data
-   comm.socketServerSetTimeout(14)
-   comm.socketServerResponse()
-
-   while true do -- The main cycle that causes the emulator to advance and trigger a game switch.
-        frame = frame + 1
-
-        if (frame % frame_check_mod) == 0 then
-            frame = 0
-            local response = comm.socketServerResponse()
-
-            if isempty(response) == false then
-                parseAndExecuteResponse(response)
-            end
+local function querySocket()
+    if (emu.framecount() % frame_check_mod) == 0 then
+        local response = comm.socketServerResponse()
+        if isempty(response) == false then
+            parseAndExecuteResponse(response)
         end
-        emu.frameadvance()
     end
+end
 
-    print("loaded, checking every " .. frame_check_mod .. " frames")
+local function main()
+    comm.socketServerSetTimeout(socket_timeout)
+
+    -- purge socket data
+    comm.socketServerResponse()
+
+    event.onframestart(querySocket)
+    
+    print("(Re-)loaded, checking every " .. frame_check_mod .. " frames for new message with a socket timeout of " .. socket_timeout .. "ms.")
+    
+    while true do
+        emu.frameadvance()
+    end 
 end
 
 if emu then
