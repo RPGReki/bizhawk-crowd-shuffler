@@ -22,8 +22,6 @@ Note this has only been tested with Bizhawk 2.9.1.
 
 **Note:** You may have a popup about the "Windows Firewall". You will need to allow access for the applications to work.
 
-**Note:** On Linux, you need to manually run `start-bizhawk-listen-to-crowd-shuffler.sh` to start BizHawk.
-
 ## Advanced Setup
 
 If you would like the shuffler to be able to respond with the next rom in chat and/or users to use reward redemptions to swap you will  need to do aquire an OAuth Token.
