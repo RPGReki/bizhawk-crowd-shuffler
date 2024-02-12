@@ -4,7 +4,6 @@ config.sessionPath = os.getenv("session") and os.getenv("session") or 'default'
 
 local pathseparator = package.config:sub(1,1)
 config.gamePath = "." .. pathseparator .. "sessions" .. pathseparator .. config.sessionPath .. pathseparator .. "CurrentROMs" .. pathseparator
-config.savePath = "." .. pathseparator .. "sessions" .. pathseparator .. config.sessionPath .. pathseparator .. "CurrentSaves" .. pathseparator
 
 local frame = 0
 
@@ -20,15 +19,15 @@ function commands.switchRom(rom)
     local currentGame = userdata.get("currentGame")
 
     print("DEBUG: switchRom=" .. rom)
-
-    if(currentGame ) then
-       savestate.save(config.savePath .. currentGame  .. ".State")
+    
+    if(currentGame) then
+        savestate.saveslot(9, true)
     end
 
     local nextGame = rom
 
     client.openrom(config.gamePath .. nextGame)
-    savestate.load(config.savePath .. nextGame .. ".State")
+    savestate.loadslot(9, true)
 
     userdata.set("currentGame", nextGame)
 end
@@ -153,12 +152,14 @@ else
             client.openrom__args = args
         end
 
-        savestate.load = function(args)
-            savestate.load__args = args
+        savestate.loadslot = function(slot, suppress_message)
+            savestate.load__slot = slot
+            savestate.load__suppress_message = suppress_message
         end
 
-        savestate.save = function(args)
-            savestate.save__args = args
+        savestate.saveslot = function(slot, suppress_message)
+            savestate.save__slot = slot
+            savestate.save__suppress_message = suppress_message
         end
 
         userdata.get = function()
@@ -171,10 +172,12 @@ else
 
         commands.switchRom("bar.nes")
 
-        assert(savestate.load__args == config.savePath .. "bar.nes.State")
-        assert(userdata.set__value == "bar.nes")
-        assert(savestate.save__args == config.savePath .. "foo.nes.State")
+        assert(savestate.save__slot == 9)
+        assert(savestate.save__suppress_message == true)
         assert(client.openrom__args == config.gamePath .. "bar.nes")
+        assert(userdata.set__value == "bar.nes")
+        assert(savestate.load__slot == 9)
+        assert(savestate.load__suppress_message == true)
     end
 
     test_ping()
