@@ -31,7 +31,7 @@ const startBizhawk = (port, host) => {
       if(!process.env.session) {
         process.env.session = config.session;
       }
-      open('Start_BizHawk_Listen_To_Crowd_Shuffler.bat');
+      open('start-bizhawk-listen-to-crowd-shuffler.bat');
       logger.info(chalk.green("Bizhawk started"));
       break;
 
