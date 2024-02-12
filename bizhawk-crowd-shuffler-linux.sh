@@ -6,6 +6,6 @@ export CHANNEL=MyTwitchChannel
 export BIZHAWK_PATH=../
 export TWITCH_TOKEN=
 
-./bizhawk-crowd-shuffler-linux
+exec ./bizhawk-crowd-shuffler-linux
 
 # node src
