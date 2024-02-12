@@ -6,8 +6,9 @@ const logger = console;
 
 const open = require('open');
 const net = require('net');
-
+const { exec } = require('child_process');
 const common = require('./common');
+
 const { RomShuffler } = require('./swap');
 const { TwitchShufflerListener } = require('./twitch')
 
@@ -25,18 +26,33 @@ const precondition = (expression, message) => {
 }
 
 const startBizhawk = (port, host) => {
-  // TODO
-  const isWin = process.platform === "win32";
-  if(isWin) {
+  switch(process.platform) {
+    case "win32":
+      if(!process.env.session) {
+        process.env.session = config.session;
+      }
+      open('Start_BizHawk_Listen_To_Crowd_Shuffler.bat');
+      logger.info(chalk.green("Bizhawk started"));
+      break;
 
-    if(!process.env.session) {
-      process.env.session = config.session;
-    }
+    case "linux":
+      if(!process.env.session) {
+        process.env.session = config.session;
+      }
+      
+      exec('./start-bizhawk-listen-to-crowd-shuffler.sh', (error, stdout, stderr) => {
+        console.log(stdout);
+        console.log(stderr);
+        if (error !== null) {
+            console.log(`exec error: ${error}`);
+        }
+      });
+      logger.info(chalk.green("Bizhawk started"));
+      break;
 
-    open('Start_BizHawk_Listen_To_Crowd_Shuffler.bat');
-    logger.info(chalk.green("Bizhawk started"));
-  } else {
-    logger.error(chalk.yellow("Script not run in Windows. Starting the BizHawk process is a no-op: "));
+    default:
+      logger.error(chalk.yellow("Script run in " + process.platform + ". Please start BizHawk manually."));
+
   }
 };
 
@@ -135,7 +151,7 @@ const startServer = async () => {
 
       const ping = () => {
         sockets.forEach((sock) => {
-          sock.write("ping\n");
+          sock.write("4 ping\n");
         });
 
         setTimeout(ping, 2000);
